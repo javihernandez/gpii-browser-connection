@@ -1,0 +1,56 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Browser example</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body { font: 13px Helvetica, Arial; }
+      #messages { list-style-type: none; margin: 0; padding: 0; }
+      #messages li { padding: 5px 10px; }
+      #messages li:nth-child(odd) { background: #eee; }
+    </style>
+  </head>
+  <body>
+    <ul id="messages"></ul>
+    <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
+    <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
+    <script>
+      var socket = io();
+
+      var settings = {
+          one: 1,
+          two: 2,
+          three: 3
+      };
+
+      //socket.emit('request id');
+      socket.on('browser registered', function(id){
+          $('#messages').append($('<li>').text("Congratulations, you've just connected with the GPII with id = " + id));
+      });
+
+      socket.on('get settings', function(requestedSettings){
+          var returnPayload = {};
+          for (setting in requestedSettings) {
+              returnPayload[setting] = settings[setting];
+          }
+          socket.emit('got settings', returnPayload);
+      });
+
+      socket.on('set settings', function(newSettings){
+          var returnSetPayload = {};
+          for (setting in newSettings) {
+              var oldValue = settings[setting];
+              var newValue = newSettings[setting];
+
+              settings[setting] = newValue;
+
+              returnSetPayload[setting] = {
+                  oldValue: oldValue,
+                  newValue: newValue
+              };
+          }
+          socket.emit('settings applied', returnSetPayload);
+      });
+    </script>
+  </body>
+</html>
